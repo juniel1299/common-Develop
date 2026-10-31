@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 샘플: 배치도. 좌표·크기는 화면에서 소수가 올 수 있어 ROUND 후 정수로 저장한다 -->
+<mapper namespace="com.common.sample.layout.LayoutMapper">
+
+    <select id="maps" resultType="camelMap">
+        SELECT MAP_ID, MAP_NM, WIDTH, HEIGHT, BG_URL
+          FROM TB_LAYOUT_MAP
+         WHERE USE_YN = 'Y'
+         ORDER BY SORT_ORD, MAP_ID
+    </select>
+
+    <select id="items" resultType="camelMap">
+        SELECT I.MAP_ID, I.ITEM_ID, I.ITEM_NM, I.ITEM_TYPE, I.POS_X, I.POS_Y, I.WIDTH, I.HEIGHT, I.ROTATE, I.SHAPE,
+               I.USER_ID, U.USER_NM
+          FROM TB_LAYOUT_ITEM I
+          LEFT JOIN TB_USER U ON U.USER_ID = I.USER_ID
+         WHERE I.MAP_ID = #{mapId}
+         ORDER BY I.ITEM_ID
+    </select>
+
+    <insert id="insertItem">
+        INSERT INTO TB_LAYOUT_ITEM (MAP_ID, ITEM_ID, ITEM_NM, ITEM_TYPE, POS_X, POS_Y, WIDTH, HEIGHT, ROTATE, SHAPE, USER_ID, REG_ID, REG_DT)
+        VALUES (#{r.mapId}, #{r.itemId}, #{r.itemNm,jdbcType=VARCHAR}, #{r.itemType},
+                COALESCE(ROUND(CAST(#{r.posX,jdbcType=VARCHAR} AS NUMERIC)), 0), COALESCE(ROUND(CAST(#{r.posY,jdbcType=VARCHAR} AS NUMERIC)), 0),
+                ROUND(CAST(#{r.width,jdbcType=VARCHAR} AS NUMERIC)), ROUND(CAST(#{r.height,jdbcType=VARCHAR} AS NUMERIC)),
+                COALESCE(CAST(#{r.rotate,jdbcType=VARCHAR} AS INTEGER), 0), COALESCE(#{r.shape,jdbcType=VARCHAR}, 'rect'),
+                #{r.userId,jdbcType=VARCHAR}, #{loginId}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <update id="updateItem">
+        UPDATE TB_LAYOUT_ITEM
+           SET ITEM_NM   = #{r.itemNm,jdbcType=VARCHAR}
+             , ITEM_TYPE = #{r.itemType}
+             , POS_X     = COALESCE(ROUND(CAST(#{r.posX,jdbcType=VARCHAR} AS NUMERIC)), 0)
+             , POS_Y     = COALESCE(ROUND(CAST(#{r.posY,jdbcType=VARCHAR} AS NUMERIC)), 0)
+             , WIDTH     = ROUND(CAST(#{r.width,jdbcType=VARCHAR} AS NUMERIC))
+             , HEIGHT    = ROUND(CAST(#{r.height,jdbcType=VARCHAR} AS NUMERIC))
+             , ROTATE    = COALESCE(CAST(#{r.rotate,jdbcType=VARCHAR} AS INTEGER), 0)
+             , SHAPE     = COALESCE(#{r.shape,jdbcType=VARCHAR}, 'rect')
+             , USER_ID   = #{r.userId,jdbcType=VARCHAR}
+             , MOD_ID    = #{loginId}
+             , MOD_DT    = CURRENT_TIMESTAMP
+         WHERE MAP_ID  = #{r.mapId}
+           AND ITEM_ID = #{r.itemId}
+    </update>
+
+    <delete id="deleteItem">
+        DELETE FROM TB_LAYOUT_ITEM WHERE MAP_ID = #{r.mapId} AND ITEM_ID = #{r.itemId}
+    </delete>
+</mapper>

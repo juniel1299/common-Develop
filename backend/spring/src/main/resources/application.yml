@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    # postgres | oracle  (실행 시 --spring.profiles.active=oracle 로 바꿀 수 있음)
+    active: ${DB:postgres}
+  jackson:
+    # null 값도 키를 내려준다 (규약 5장: 키를 생략하지 않음)
+    default-property-inclusion: always
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.common.core.mybatis
+  configuration:
+    # DTO 결과용. Map 결과는 CamelMap 이 변환한다
+    map-underscore-to-camel-case: true
+    # 값이 null 인 컬럼도 결과 Map 에 키를 넣는다
+    call-setters-on-nulls: true
+    # Oracle 은 null 파라미터에 타입이 필요하다
+    jdbc-type-for-null: 'NULL'
+    default-fetch-size: 500
+    default-statement-timeout: 30
+
+logging:
+  level:
+    com.common: INFO

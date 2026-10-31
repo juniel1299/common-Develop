@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  샘플 매퍼. Oracle(12c+)·PostgreSQL 에서 같은 SQL 로 동작하도록 공통 문법만 쓴다.
+  - 별칭은 UPPER_SNAKE (AS JOIN_DT) → 응답에서 joinDt
+  - 날짜는 TO_CHAR 로 규약 형식 문자열을 만든다
+  - 페이징은 OFFSET ... FETCH NEXT ... (두 DB 공통)
+  - null 이 될 수 있는 파라미터는 jdbcType 을 적는다 (PostgreSQL 타입 추론, Oracle null 처리)
+-->
+<mapper namespace="com.common.sample.user.UserMapper">
+
+    <sql id="where">
+        <where>
+            <if test="userId != null">AND U.USER_ID LIKE '%' || #{userId} || '%'</if>
+            <if test="userNm != null">AND U.USER_NM LIKE '%' || #{userNm} || '%'</if>
+            <if test="deptCd != null">AND U.DEPT_CD = #{deptCd}</if>
+            <if test="useYn != null">AND U.USE_YN = #{useYn}</if>
+            <if test="joinDtFrom != null">AND U.JOIN_DT &gt;= TO_DATE(#{joinDtFrom}, 'YYYY-MM-DD')</if>
+            <if test="joinDtTo != null">AND U.JOIN_DT &lt; TO_DATE(#{joinDtTo}, 'YYYY-MM-DD') + 1</if>
+        </where>
+    </sql>
+
+    <sql id="columns">
+        U.USER_ID
+      , U.USER_NM
+      , U.DEPT_CD
+      , U.EMAIL
+      , TO_CHAR(U.JOIN_DT, 'YYYY-MM-DD') AS JOIN_DT
+      , U.SALARY
+      , U.USE_YN
+      , U.REMARK
+      , TO_CHAR(U.REG_DT, 'YYYY-MM-DD"T"HH24:MI:SS') AS REG_DT
+    </sql>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM TB_USER U
+        <include refid="where"/>
+    </select>
+
+    <select id="list" resultType="camelMap">
+        SELECT <include refid="columns"/>
+          FROM TB_USER U
+        <include refid="where"/>
+         ORDER BY ${orderBy}
+        OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="find" resultType="camelMap">
+        SELECT <include refid="columns"/>
+          FROM TB_USER U
+         WHERE U.USER_ID = #{userId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO TB_USER (USER_ID, USER_NM, DEPT_CD, EMAIL, JOIN_DT, SALARY, USE_YN, REMARK, REG_ID, REG_DT)
+        VALUES (#{u.userId}, #{u.userNm}, #{u.deptCd}, #{u.email,jdbcType=VARCHAR},
+                TO_DATE(#{u.joinDt,jdbcType=VARCHAR}, 'YYYY-MM-DD'), #{u.salary,jdbcType=NUMERIC},
+                COALESCE(#{u.useYn,jdbcType=VARCHAR}, 'Y'), #{u.remark,jdbcType=VARCHAR}, #{loginId}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <update id="update">
+        UPDATE TB_USER
+           SET USER_NM = #{u.userNm}
+             , DEPT_CD = #{u.deptCd}
+             , EMAIL   = #{u.email,jdbcType=VARCHAR}
+             , JOIN_DT = TO_DATE(#{u.joinDt,jdbcType=VARCHAR}, 'YYYY-MM-DD')
+             , SALARY  = #{u.salary,jdbcType=NUMERIC}
+             , USE_YN  = COALESCE(#{u.useYn,jdbcType=VARCHAR}, 'Y')
+             , REMARK  = #{u.remark,jdbcType=VARCHAR}
+             , MOD_ID  = #{loginId}
+             , MOD_DT  = CURRENT_TIMESTAMP
+         WHERE USER_ID = #{u.userId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM TB_USER WHERE USER_ID = #{userId}
+    </delete>
+</mapper>

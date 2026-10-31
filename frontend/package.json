@@ -1,0 +1,14 @@
+{
+  "name": "common-frontend",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:packages": "npm run build -w @common/core -w @common/ui -w @common/pages",
+    "build": "npm run build:packages && npm run build -w react-app -w next-app",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

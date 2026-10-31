@@ -1,0 +1,5 @@
+Django>=6.1,<6.2
+djangorestframework>=3.18,<3.19
+# 쓰는 DB 드라이버만 남겨도 된다
+psycopg[binary]>=3.3,<3.4
+oracledb>=3.0

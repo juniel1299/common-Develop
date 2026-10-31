@@ -1,0 +1,34 @@
+# 개발용 DB. 처음 실행할 때 sql/ 의 테이블과 샘플 데이터가 자동으로 들어간다.
+#   docker compose up -d postgres      # PostgreSQL  localhost:5432  appdb / app / app
+#   docker compose up -d oracle        # Oracle Free localhost:1521  FREEPDB1 / app / app
+# 데이터를 지우고 다시 만들려면: docker compose down -v
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      # 정렬을 Oracle 기본(BINARY)과 같게: 한글은 가나다순, 숫자·영문은 코드 순서
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8
+    ports: ["5432:5432"]
+    volumes:
+      - ./sql/postgresql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/postgresql/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+      - pgdata:/var/lib/postgresql/data
+
+  oracle:
+    image: gvenzl/oracle-free:23-slim-faststart
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: app
+      APP_USER_PASSWORD: app
+    ports: ["1521:1521"]
+    volumes:
+      - ./sql/oracle:/sql:ro
+      - ./sql/oracle/init:/container-entrypoint-initdb.d:ro
+      - oradata:/opt/oracle/oradata
+
+volumes:
+  pgdata:
+  oradata:

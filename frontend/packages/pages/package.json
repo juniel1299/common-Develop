@@ -1,0 +1,42 @@
+{
+  "name": "@common/pages",
+  "version": "0.1.0",
+  "description": "샘플 화면(대시보드, 사용자 관리, 공통코드 관리, 좌석 배치도)과 백엔드 없이 동작하는 가짜 API",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@common/core": "0.1.0",
+    "@common/ui": "0.1.0"
+  },
+  "peerDependencies": {
+    "@ant-design/icons": ">=5",
+    "antd": ">=5",
+    "axios": "^1.7.0",
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@ant-design/icons": "^6.3.4",
+    "@types/react": "^19.3.0",
+    "antd": "^6.6.6",
+    "axios": "^1.20.0",
+    "react": "^19.3.1",
+    "tsup": "^9.0.0",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

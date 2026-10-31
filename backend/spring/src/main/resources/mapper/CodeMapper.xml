@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 샘플: Map 으로 받은 행(r)을 그대로 쓴다. 키는 camelCase (#{r.codeNm}) -->
+<mapper namespace="com.common.sample.code.CodeMapper">
+
+    <select id="groups" resultType="camelMap">
+        SELECT GROUP_CD, GROUP_NM, USE_YN
+          FROM TB_COMM_CODE_GROUP
+         ORDER BY GROUP_CD
+    </select>
+
+    <select id="codes" resultType="camelMap">
+        SELECT GROUP_CD, CODE, CODE_NM, SORT_ORD, USE_YN
+          FROM TB_COMM_CODE
+         WHERE GROUP_CD = #{groupCd}
+         ORDER BY SORT_ORD, CODE
+    </select>
+
+    <select id="countCodes" resultType="int">
+        SELECT COUNT(*) FROM TB_COMM_CODE WHERE GROUP_CD = #{groupCd}
+    </select>
+
+    <insert id="insertGroup">
+        INSERT INTO TB_COMM_CODE_GROUP (GROUP_CD, GROUP_NM, USE_YN, REG_ID, REG_DT)
+        VALUES (#{r.groupCd}, #{r.groupNm}, COALESCE(#{r.useYn,jdbcType=VARCHAR}, 'Y'), #{loginId}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <update id="updateGroup">
+        UPDATE TB_COMM_CODE_GROUP
+           SET GROUP_NM = #{r.groupNm}
+             , USE_YN   = COALESCE(#{r.useYn,jdbcType=VARCHAR}, 'Y')
+             , MOD_ID   = #{loginId}
+             , MOD_DT   = CURRENT_TIMESTAMP
+         WHERE GROUP_CD = #{r.groupCd}
+    </update>
+
+    <delete id="deleteGroup">
+        DELETE FROM TB_COMM_CODE_GROUP WHERE GROUP_CD = #{r.groupCd}
+    </delete>
+
+    <insert id="insertCode">
+        INSERT INTO TB_COMM_CODE (GROUP_CD, CODE, CODE_NM, SORT_ORD, USE_YN, REG_ID, REG_DT)
+        VALUES (#{r.groupCd}, #{r.code}, #{r.codeNm}, COALESCE(CAST(#{r.sortOrd,jdbcType=VARCHAR} AS INTEGER), 0),
+                COALESCE(#{r.useYn,jdbcType=VARCHAR}, 'Y'), #{loginId}, CURRENT_TIMESTAMP)
+    </insert>
+
+    <update id="updateCode">
+        UPDATE TB_COMM_CODE
+           SET CODE_NM  = #{r.codeNm}
+             , SORT_ORD = COALESCE(CAST(#{r.sortOrd,jdbcType=VARCHAR} AS INTEGER), 0)
+             , USE_YN   = COALESCE(#{r.useYn,jdbcType=VARCHAR}, 'Y')
+             , MOD_ID   = #{loginId}
+             , MOD_DT   = CURRENT_TIMESTAMP
+         WHERE GROUP_CD = #{r.groupCd}
+           AND CODE     = #{r.code}
+    </update>
+
+    <delete id="deleteCode">
+        DELETE FROM TB_COMM_CODE WHERE GROUP_CD = #{r.groupCd} AND CODE = #{r.code}
+    </delete>
+</mapper>
